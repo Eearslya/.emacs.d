@@ -1,6 +1,8 @@
 auto-save-list/
+autosaves/
+backups/
+elpa/
 
 *~
 *.elc
-
 Eearslya.el

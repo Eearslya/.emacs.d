@@ -1,0 +1,147 @@
+#+TITLE: Emacs Configuration
+#+AUTHOR: Eearslya Sleiarion
+#+TOC: true
+#+STARTUP: content
+#+TODO: TODO TRIAL | DISABLED
+
+* Initial Configuration
+** Personal Information
+#+BEGIN_SRC emacs-lisp
+  (setq user-full-name "Eearslya Sleiarion"
+	user-mail-address "eearslya@sleiarion.net")
+#+END_SRC
+
+** Custom Settings
+   Move our custom settings into their own file, so we can leave [[file:init.el][init.el]] untouched.
+#+BEGIN_SRC emacs-lisp
+  (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
+  (when (file-exists-p custom-file)
+    (load custom-file))
+#+END_SRC
+
+** Backups
+   I'd rather not have my working directories cluttered up with the backup files
+   that Emacs makes, but I donn't want to disable them, either. So instead, all
+   backups go into a folder just for them.
+#+BEGIN_SRC emacs-lisp
+  (let ((backup-dir
+	 (file-name-as-directory
+	  (expand-file-name "backups" user-emacs-directory)))
+	(auto-saves-dir
+	 (file-name-as-directory
+	  (expand-file-name "autosaves" user-emacs-directory))))
+    ;; If the backup or autosave folders don't exist, make them.
+    (dolist (dir (list backup-dir auto-saves-dir))
+      (when (not (file-directory-p dir))
+	(make-directory dir t)))
+    (setq backup-directory-alist `(("." . ,backup-dir))
+	  auto-save-file-name-transforms `((".*" ,auto-saves-dir t))
+	  auto-save-list-file-prefix (concat auto-saves-dir ".saves-")))
+  (setq backup-by-copying t
+	create-lockfiles nil
+	delete-old-versions t
+	kept-new-versions 5
+	kept-old-versions 2
+	version-control t)
+#+END_SRC
+
+** GUI Interface
+   Get rid of all of those pesky menus and buttons, we won't be needing them.
+#+BEGIN_SRC emacs-lisp
+  (if (fboundp 'blink-cursor-mode) (blink-cursor-mode 0))
+  (if (fboundp 'menu-bar-mode) (menu-bar-mode 0))
+  (if (fboundp 'tool-bar-mode) (tool-bar-mode 0))
+  (if (fboundp 'scroll-bar-mode) (scroll-bar-mode 0))
+  (if (fboundp 'tooltip-mode) (tooltip-mode 0))
+#+END_SRC
+
+** Default Tweaks
+   A collection of miscellaneous changes that I find make Emacs a lot nicer.
+*** =yes-or-no-p=
+    Simplify this question to just be 'y/n'.
+#+BEGIN_SRC emacs-lisp
+  (defalias 'yes-or-no-p 'y-or-n-p)
+#+END_SRC
+
+*** UTF-8
+    Ensure everything is set to use UTF-8 for compatibility.
+#+BEGIN_SRC emacs-lisp
+  (setq locale-coding-system 'utf-8)
+  (set-terminal-coding-system 'utf-8)
+  (set-keyboard-coding-system 'utf-8)
+  (set-selection-coding-system 'utf-8)
+  (prefer-coding-system 'utf-8)
+#+END_SRC
+
+*** File Formatting
+    Various tweaks to how Emacs handles indentation, newlines, etc.
+#+BEGIN_SRC emacs-lisp
+  (setq-default indent-tabs-mode nil
+		indicate-empty-lines t)
+  (setq require-final-newline t
+	sentence-end-double-space nil)
+#+END_SRC
+
+*** Startup Screen
+    Disable the initial startup screen.
+#+BEGIN_SRC emacs-lisp
+  (setq inhibit-startup-message t)
+#+END_SRC
+
+*** Trailing Whitespace
+    I never want to see trailing whitespace at the end of a line.
+#+BEGIN_SRC emacs-lisp
+  (add-hook 'before-save-hook 'delete-trailing-whitespace)
+#+END_SRC
+
+*** Miscellanous
+    Various other tweaks that I don't feel like giving a heading for.
+#+BEGIN_SRC emacs-lisp
+  (show-paren-mode t)
+  (setq load-prefer-newer t
+        visible-bell t)
+#+END_SRC
+
+* Package Management
+  I use [[https://www.github.com/jwiegley/use-package][use-package]] for my package management. It allows lazy-loading of
+  packages until only when they're first needed, greatly speeding up my
+  initial load time.
+
+  It also allows for configuration of packages to be centralized right
+  alongside the package itself, making organization easier.
+
+** Package Archives
+   For package archives, I use the [[https://melpa.org][MELPA]] and [[https://orgmode.org/elpa/][ORG Mode]] repositories.
+#+BEGIN_SRC emacs-lisp
+  (require 'package)
+  (let* ((no-ssl (and (memq system-type '(windows-nt ms-dos))
+                      (not (gnutls-available-p))))
+         (proto (if no-ssl "http" "https")))
+    (unless (assoc-default "melpa" package-archives)  ; In case they already exist, don't add them twice.
+      (add-to-list 'package-archives
+                   (cons "melpa"
+                         (concat proto "://melpa.org/packages/")) t))
+    (unless (assoc-default "org" package-archives)
+      (add-to-list 'package-archives
+                   (cons "org"
+                         (concat proto "://orgmode.org/elpa/")) t)))
+  (package-initialize)
+#+END_SRC
+
+** Custom ELisp Code
+   Add the [[file:elisp/][elisp]] directory to load path, so we can load our own packages.
+#+BEGIN_SRC emacs-lisp
+  (add-to-list 'load-path
+               (file-name-as-directory
+                (expand-file-name "elisp" user-emacs-directory)))
+#+END_SRC
+
+** Use-Package
+   Finally, the star of the show, use-package itself.
+#+BEGIN_SRC emacs-lisp
+  (unless (package-installed-p 'use-package)
+    (package-refresh-contents)
+    (package-install 'use-package))
+  (require 'use-package)
+  (setq use-package-always-ensure t)
+#+END_SRC
