@@ -314,3 +314,50 @@
       "pf" 'projectile-find-file
       "pp" 'projectile-switch-project))
 #+END_SRC
+
+* Development
+  These are packages that help with development that aren't necessarily specific to one language.
+  Thinks like auto-completion, git integration, and syntax checking.
+
+** Company Mode
+   Company mode provides an interface for auto-completion, with support for multiple
+   backends for multiple languages.
+#+BEGIN_SRC emacs-lisp
+  (use-package company
+    :demand t
+    :config
+    (add-hook 'after-init-hook 'global-company-mode))
+#+END_SRC
+
+** Flycheck
+   Flycheck is our main syntax checker / linter. It comes with support for many languages
+   and many linting backends.
+#+BEGIN_SRC emacs-lisp
+  (use-package flycheck
+    :demand t
+    :config
+    (global-flycheck-mode))
+#+END_SRC
+
+*** Flycheck/Popup
+    Move Flycheck's errors from the minibuffer to a small popup just below the line in question.
+#+BEGIN_SRC emacs-lisp
+  (use-package flycheck-popup-tip
+    :hook (flycheck-mode . flycheck-popup-tip-mode))
+#+END_SRC
+
+** Magit
+   Magit is the wonderful Emacs package that gives us Git integration.
+#+BEGIN_SRC emacs-lisp
+  (use-package magit
+    :general
+    (leader
+      "gs" 'magit-status))
+#+END_SRC
+
+*** Magit/Evil
+    By default, Magit doesn't quite play nice with Evil's keybinds. This package allows
+    us to navigate Magit buffers using Evil keybinds.
+#+BEGIN_SRC emacs-lisp
+  (use-package evil-magit)
+#+END_SRC

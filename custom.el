@@ -5,7 +5,7 @@
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
    (quote
-    (projectile doom-themes window-numbering which-key counsel general evil use-package))))
+    (evil-magit magic flycheck-popup-tip flycheck company projectile doom-themes window-numbering which-key counsel general evil use-package))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
