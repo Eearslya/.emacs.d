@@ -145,3 +145,142 @@
   (require 'use-package)
   (setq use-package-always-ensure t)
 #+END_SRC
+
+* Major Interface Changes
+  These packages are the kind that affect massive change to how Emacs functions. Things
+  like Evil mode, General, and Ivy. These packages are at the core of my configuration
+  and define how Emacs as a whole will work.
+
+** Evil Mode
+   Bringing the best of both worlds together, this package gives Emacs Vim-like keybinds.
+   All the power of Emacs, and all the editing speed of Vim.
+#+BEGIN_SRC emacs-lisp
+  (use-package evil
+    :demand
+    :commands (evil-mode)
+    :config
+    (evil-mode 1))
+#+END_SRC
+
+** General
+   One package to rule all of the keybinds.
+
+#+BEGIN_SRC emacs-lisp
+  (use-package general
+    :demand t)
+  (require 'general)
+#+END_SRC
+
+*** General/Leader
+    Most of my keybinds follow the Spacemacs standard. Each command is bound to a series of
+    keypresses, starting with the =SPC= key.
+#+BEGIN_SRC emacs-lisp
+  (general-create-definer
+   leader
+   :prefix "SPC"
+   :non-normal-prefix "C-SPC"
+   :states '(emacs insert motion normal visual)
+   :keymaps 'override)
+  (leader "" nil)
+#+END_SRC
+
+*** General/Buffers
+#+BEGIN_SRC emacs-lisp
+  (leader
+    "bb" 'switch-to-buffer
+    "bd" 'kill-this-buffer
+    "bn" 'next-buffer
+    "bp" 'previous-buffer)
+#+END_SRC
+
+*** General/Files
+#+BEGIN_SRC emacs-lisp
+  (leader
+    "fe" '((lambda () (interactive) (find-file (expand-file-name "Eearslya.org" user-emacs-directory))) :wk "emacs config")
+    "ff" 'find-file
+    "fs" 'save-buffer)
+#+END_SRC
+
+*** General/Windows
+#+BEGIN_SRC emacs-lisp
+  (leader
+    "w-" 'split-window-below
+    "w/" 'split-window-right
+    "wd" 'delete-window
+    "wm" 'delete-other-windows)
+#+END_SRC
+
+** Ivy/Counsel/Swiper
+   The Counsel is a collection of packages that replace and improve Emacs' default
+   autocompletion window.
+#+BEGIN_SRC emacs-lisp
+  (use-package counsel
+    :demand t
+    :init
+    (setq ivy-use-virtual-buffers t)
+    :config
+    (ivy-mode 1)
+    (counsel-mode 1)
+    :general
+    (leader
+      "SPC" 'counsel-M-x))
+#+END_SRC
+
+** Which Key
+   With so many keybinds in this installation of Emacs, it's inevitable I'll forget
+   a few. Which-Key will helpfully pop up a window after a short delay to show what
+   keys I can press to complete the chord.
+#+BEGIN_SRC emacs-lisp
+  (use-package which-key
+    :demand t
+    :config
+    (which-key-mode))
+#+END_SRC
+
+** Window Numbering
+   Assign a number 1 through 9 to each window. Allows me to quickly swap between them
+   with =SPC-[1-9]=.
+#+BEGIN_SRC emacs-lisp
+  (use-package window-numbering
+    :demand t
+    :config
+    (window-numbering-mode)
+    (push '(("\\(.*\\) 0" . "select-window-0") . ("\\1 0-9" . "select window"))
+          which-key-replacement-alist)
+    (push '((nil . "select-window-[1-9]") . t) which-key-replacement-alist)
+    :general
+    (leader
+      "0" 'select-window-0
+      "1" 'select-window-1
+      "2" 'select-window-2
+      "3" 'select-window-3
+      "4" 'select-window-4
+      "5" 'select-window-5
+      "6" 'select-window-6
+      "7" 'select-window-7
+      "8" 'select-window-8
+      "9" 'select-window-9))
+#+END_SRC
+
+* Appearance
+  Themes, fonts, colors of all sorts! All of them get a place here.
+
+** Doom Themes
+   Gotta have a dark theme.
+#+BEGIN_SRC emacs-lisp
+  (use-package doom-themes
+    :demand t
+    :config
+    (load-theme 'doom-one t)
+    (doom-themes-org-config))
+#+END_SRC
+
+** Source Code Pro
+   Set our font to [[https://github.com/adobe-fonts/source-code-pro][Source Code Pro]].
+#+BEGIN_SRC emacs-lisp
+  (set-face-attribute 'default nil
+                      :family "Source Code Pro"
+                      :height 120
+                      :weight 'normal
+                      :width 'normal)
+#+END_SRC
