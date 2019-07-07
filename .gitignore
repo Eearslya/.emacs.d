@@ -6,3 +6,5 @@ elpa/
 *~
 *.elc
 Eearslya.el
+projectile.cache
+projectile-bookmarks.eld

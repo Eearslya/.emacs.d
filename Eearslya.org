@@ -284,3 +284,33 @@
                       :weight 'normal
                       :width 'normal)
 #+END_SRC
+
+* Org Mode
+  Org Mode is a massive addition to Emacs that allows you to perform miracles.
+  Organization, scheduling, not taking, and even writing Emacs configuration files!
+#+BEGIN_SRC emacs-lisp
+  (use-package org
+    :demand t
+    :config
+    (org-babel-do-load-languages
+     'org-babel-load-languages
+     '((emacs-lisp . t)
+       (org . t)
+       (ruby . t)
+       (shell . t)))
+    (setq org-src-fontify-natively t
+          org-src-tab-acts-natively t))
+#+END_SRC
+
+* Project Management
+  For project management, the star of the show is the ever-popular [[https://github.com/bbatsov/projectile][Projectile]].
+#+BEGIN_SRC emacs-lisp
+  (use-package projectile
+    :demand t
+    :config
+    (projectile-mode)
+    :general
+    (leader
+      "pf" 'projectile-find-file
+      "pp" 'projectile-switch-project))
+#+END_SRC
