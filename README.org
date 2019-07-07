@@ -1,0 +1,18 @@
+#+TITLE: Eearslya's .emacs.d
+#+AUTHOR: Eearslya Sleiarion
+#+TOC: true
+#+STARTUP: content
+
+#+BEGIN_QUOTE
+"Emacs is like a laser guided missile. It only has to be slightly mis-configured to ruin your whole day." --Sean McGrathi
+#+END_QUOTE
+
+* Emacs Configuration
+  This repository contains all of the configuration and customization I've done to tailor Emacs to my needs.
+  It is published here for both my benefit, and in the hopes that others might look and take inspiration
+  from my work.
+** Literate Configuration
+   My Emacs configuration is almost wholly contained within the [[file:Eearslya.org][Eearslya.org]] file.
+   There, the file can be organized into logical sections, and extra documentation and explanation can be added.
+   The [[file:init.el][init.el]] file contains several methods that will extract the ELisp from [[file:Eearslya.org][Eearslya.org]] and combine it all
+   together into the file *Eearslya.el*, which is then loaded into Emacs to apply the configuration.
