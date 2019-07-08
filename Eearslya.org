@@ -163,6 +163,16 @@
     (evil-mode 1))
 #+END_SRC
 
+** Diminish
+   Diminish can hide specified minor modes, helping to clean up the modeline.
+
+#+BEGIN_SRC emacs-lisp
+  (use-package diminish
+    :demand t
+    :config
+    (diminish 'undo-tree-mode))
+#+END_SRC
+
 ** General
    One package to rule all of the keybinds.
 
@@ -217,6 +227,7 @@
 #+BEGIN_SRC emacs-lisp
   (use-package counsel
     :demand t
+    :diminish ivy-mode counsel-mode
     :init
     (setq ivy-use-virtual-buffers t)
     :config
@@ -234,6 +245,7 @@
 #+BEGIN_SRC emacs-lisp
   (use-package which-key
     :demand t
+    :diminish
     :config
     (which-key-mode))
 #+END_SRC
@@ -309,6 +321,7 @@
 #+BEGIN_SRC emacs-lisp
   (use-package projectile
     :demand t
+    :diminish
     :config
     (projectile-mode)
     :general
@@ -336,6 +349,7 @@
 #+BEGIN_SRC emacs-lisp
   (use-package company
     :demand t
+    :diminish
     :config
     (add-hook 'after-init-hook 'global-company-mode))
 #+END_SRC
