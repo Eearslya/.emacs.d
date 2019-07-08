@@ -2,9 +2,11 @@ auto-save-list/
 autosaves/
 backups/
 elpa/
+transient/
 
 *~
 *.elc
 Eearslya.el
 projectile.cache
 projectile-bookmarks.eld
+recentf

@@ -100,6 +100,7 @@
   (show-paren-mode t)
   (setq load-prefer-newer t
         visible-bell t)
+  (global-linum-mode t)
 #+END_SRC
 
 * Package Management
@@ -303,7 +304,8 @@
 #+END_SRC
 
 * Project Management
-  For project management, the star of the show is the ever-popular [[https://github.com/bbatsov/projectile][Projectile]].
+** Projectile
+   For project management, the star of the show is the ever-popular [[https://github.com/bbatsov/projectile][Projectile]].
 #+BEGIN_SRC emacs-lisp
   (use-package projectile
     :demand t
@@ -313,6 +315,15 @@
     (leader
       "pf" 'projectile-find-file
       "pp" 'projectile-switch-project))
+#+END_SRC
+
+*** Projectile/Ivy
+    Add in extra support between Projectile and Ivy/Counsel.
+#+BEGIN_SRC emacs-lisp
+  (use-package counsel-projectile
+    :demand t
+    :config
+    (counsel-projectile-mode))
 #+END_SRC
 
 * Development
@@ -360,4 +371,34 @@
     us to navigate Magit buffers using Evil keybinds.
 #+BEGIN_SRC emacs-lisp
   (use-package evil-magit)
+#+END_SRC
+
+* Languages
+** Python
+*** Elpy
+#+BEGIN_SRC emacs-lisp
+  (use-package elpy
+    :commands elpy-enable
+    :init
+    (advice-add 'python-mode :before 'elpy-enable)
+    :config
+    (when (require 'flycheck nil t)
+      (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))
+      (add-hook 'elpy-mode-hook 'flycheck-mode)))
+#+END_SRC
+
+*** Pipenv
+#+BEGIN_SRC emacs-lisp
+  (use-package pipenv
+    :hook (python-mode . pipenv-mode)
+    :init
+    ;; Define a custom projectile handler, as pipenv.el is
+    ;; apparently bad at finding the project root.
+    (defun pipenv-projectile-after-switch-custom ()
+      (let ((default-directory (projectile-project-root)))
+        (pipenv-deactivate)
+        (when (pipenv-project?)
+          (setq python-shell-virtualenv-root (pipenv-venv))
+          (pipenv-activate))))
+    (setq pipenv-projectile-after-switch-function #'pipenv-projectile-after-switch-custom))
 #+END_SRC
