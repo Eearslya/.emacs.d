@@ -2,6 +2,7 @@ auto-save-list/
 autosaves/
 backups/
 elpa/
+server/
 transient/
 
 *~
