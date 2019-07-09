@@ -9,6 +9,9 @@
 ;; detect and load a Python virtual environment created by Pipenv.
 ;; There are also additional hooks to allow compatibility with Flycheck.
 
+;; Inspiration taken from this lovely blog post:
+;; http://learning.ptrac.es/2018/02/10/How-to-Integrate-Pipenv-into-Emacs/
+
 ;;; Code:
 
 (require 'flycheck)
