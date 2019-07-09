@@ -402,17 +402,14 @@
 #+END_SRC
 
 *** Pipenv
+    The actual [[https://github.com/pwalsh/pipenv.el][pipenv.el]] is currently unmaintained, and I was having trouble getting
+    it to play nice with Flycheck. So I've written [[file:elisp/luna-pipenv.el][my own simple implementation]]
+    to activate the Python venv and reset Flycheck to allow it to use checkers
+    only available from within the venv.
 #+BEGIN_SRC emacs-lisp
-  (use-package pipenv
-    :hook (python-mode . pipenv-mode)
+  (use-package luna-pipenv
+    :ensure nil
+    :commands luna|pipenv-mode
     :init
-    ;; Define a custom projectile handler, as pipenv.el is
-    ;; apparently bad at finding the project root.
-    (defun pipenv-projectile-after-switch-custom ()
-      (let ((default-directory (projectile-project-root)))
-        (pipenv-deactivate)
-        (when (pipenv-project?)
-          (setq python-shell-virtualenv-root (pipenv-venv))
-          (pipenv-activate))))
-    (setq pipenv-projectile-after-switch-function #'pipenv-projectile-after-switch-custom))
+    (add-hook 'projectile-after-switch-project-hook #'luna|pipenv-mode))
 #+END_SRC
