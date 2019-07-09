@@ -74,6 +74,7 @@ that is only installed after the venv is activated."
 
 (defun luna|pipenv-mode ()
   "Activate Pipenv upon Projectile project switch."
+  (interactive)
   ;; Deactivate Pyvenv first to ensure we start with a clean slate.
   (pyvenv-deactivate)
   (when (luna|pipenv-project-p)
