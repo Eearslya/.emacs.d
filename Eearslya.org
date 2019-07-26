@@ -444,3 +444,67 @@
     :config
     (flycheck-add-next-checker 'python-pylint 'python-pycodestyle))
 #+END_SRC
+** Ruby
+*** Bundler
+#+BEGIN_SRC emacs-lisp
+  (use-package bundler
+    :general
+    (leader
+      :keymaps 'projectile-rails-mode-map
+      "mb" '(nil :ignore t :wk "bundler")
+      "mbi" '(bundle-install :wk "install")))
+#+END_SRC
+
+*** Projectile-Rails
+#+BEGIN_SRC emacs-lisp
+  (use-package projectile-rails
+    :demand t
+    :after projectile
+    :config
+    (projectile-rails-global-mode)
+    :general
+    (leader
+     :keymaps 'projectile-rails-mode-map
+     "m" '(nil :ignore t :wk "rails")
+     "m!" '(nil :ignore t :wk "run")
+     "m!c" '(projectile-rails-console :wk "console")
+     "m!g" '(projectile-rails-generate :wk "generate")
+     "m!r" '(projectile-rails-rake :wk "rake")
+     "m!s" '(projectile-rails-server :wk "server")
+     "mf" '(nil :ignore t :wk "find")
+     "mfc" '(projectile-rails-find-controller :wk "controller")
+     "mfh" '(projectile-rails-find-helper :wk "helper")
+     "mfm" '(projectile-rails-find-model :wk "model")
+     "mfv" '(projectile-rails-find-view :wk "view")
+     "mg" '(nil :ignore t :wk "goto")
+     "mgg" '(projectile-rails-goto-gemfile :wk "Gemfile")
+     "mgr" '(projectile-rails-goto-routes :wk "routes")))
+#+END_SRC
+
+*** Robe
+    [[https://github.com/dgutov/robe][Robe]] is a minor mode for Ruby files that can help finding definitions
+    and details about classes and objects.
+#+BEGIN_SRC emacs-lisp
+  (use-package robe
+    :hook (ruby-mode . robe-mode))
+#+END_SRC
+
+*** Rspec Mode
+#+BEGIN_SRC emacs-lisp
+  (use-package rspec-mode
+    :hook (ruby-mode . rspec-mode)
+    :general
+    (leader
+      :keymaps 'projectile-rails-mode-map
+      "mt" '(rspec-mode-keymap :wk "rspec")))
+#+END_SRC
+
+*** RVM
+#+BEGIN_SRC emacs-lisp
+  (use-package rvm
+    :hook (ruby-mode . rvm-activate-corresponding-ruby)
+    :config
+    (setq rspec-use-rvm t
+          rspec-use-spring-when-possible nil)
+    (rvm-use-default))
+#+END_SRC
