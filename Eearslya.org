@@ -508,3 +508,9 @@
           rspec-use-spring-when-possible nil)
     (rvm-use-default))
 #+END_SRC
+** YAML
+*** YAML Mode
+#+BEGIN_SRC emacs-lisp
+  (use-package yaml-mode
+    :mode "\\.yml\\'")
+#+END_SRC
