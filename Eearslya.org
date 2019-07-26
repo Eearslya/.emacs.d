@@ -403,6 +403,13 @@
           web-mode-markup-indent-offset 2))
 #+END_SRC
 ** Python
+*** Flycheck
+    Set pycompile to be our first checker, followed by pylint.
+#+BEGIN_SRC emacs-lisp
+  (add-hook 'python-mode-hook (lambda ()
+                                (setq flycheck-checker 'python-pycompile)))
+  (flycheck-add-next-checker 'python-pycompile 'python-pylint)
+#+END_SRC
 *** Elpy
 #+BEGIN_SRC emacs-lisp
   (use-package elpy
