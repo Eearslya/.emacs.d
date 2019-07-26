@@ -189,15 +189,15 @@
   (general-create-definer
    leader
    :prefix "SPC"
-   :non-normal-prefix "C-SPC"
-   :states '(emacs insert motion normal visual)
-   :keymaps 'override)
+   :non-normal-prefix "M-SPC"
+   :states '(emacs insert motion normal visual))
   (leader "" nil)
 #+END_SRC
 
 *** General/Buffers
 #+BEGIN_SRC emacs-lisp
   (leader
+    "b" '(:ignore t :wk "buffers")
     "bb" 'switch-to-buffer
     "bd" 'kill-this-buffer
     "bn" 'next-buffer
@@ -207,6 +207,7 @@
 *** General/Files
 #+BEGIN_SRC emacs-lisp
   (leader
+    "f" '(:ignore t :wk "files")
     "fe" '((lambda () (interactive) (find-file (expand-file-name "Eearslya.org" user-emacs-directory))) :wk "emacs config")
     "ff" 'find-file
     "fs" 'save-buffer)
@@ -215,6 +216,7 @@
 *** General/Windows
 #+BEGIN_SRC emacs-lisp
   (leader
+    "w" '(:ignore t :wk "windows")
     "w-" 'split-window-below
     "w/" 'split-window-right
     "wd" 'delete-window
