@@ -390,6 +390,18 @@
 #+END_SRC
 
 * Languages
+** HTML
+*** Web Mode
+#+BEGIN_SRC emacs-lisp
+  (use-package web-mode
+    :mode "\\.erb\\'"
+    :init
+    (setq web-mode-css-indent-offset 2
+          web-mode-css-indent-offset 2
+          web-mode-enable-auto-pairing t
+          web-mode-enable-css-colorization t
+          web-mode-markup-indent-offset 2))
+#+END_SRC
 ** Python
 *** Elpy
 #+BEGIN_SRC emacs-lisp
