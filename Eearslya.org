@@ -199,7 +199,7 @@
   (leader
     "b" '(:ignore t :wk "buffers")
     "bb" 'switch-to-buffer
-    "bd" 'kill-this-buffer
+    "bd" '((lambda () (interactive) (kill-buffer (current-buffer))) :wk "kill-this-buffer")
     "bn" 'next-buffer
     "bp" 'previous-buffer)
 #+END_SRC
