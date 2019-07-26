@@ -415,3 +415,13 @@
     :init
     (add-hook 'projectile-after-switch-project-hook #'luna|pipenv-mode))
 #+END_SRC
+
+*** Flycheck/PyCodeStyle
+    Add support for =pycodestyle= in Flycheck. [[https://github.com/piger/flycheck-pycodestyle][Thanks piger!]]
+#+BEGIN_SRC emacs-lisp
+  (use-package flycheck-pycodestyle
+    :ensure nil
+    :demand t
+    :config
+    (flycheck-add-next-checker 'python-pylint 'python-pycodestyle))
+#+END_SRC
