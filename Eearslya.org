@@ -178,7 +178,9 @@
 
 #+BEGIN_SRC emacs-lisp
   (use-package general
-    :demand t)
+    :demand t
+    :config
+    (general-evil-setup))
   (require 'general)
 #+END_SRC
 
