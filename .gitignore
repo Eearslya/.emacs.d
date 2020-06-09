@@ -1,0 +1,13 @@
+autosaves/
+backups/
+elpa/
+eshell/
+transient/
+
+*.elc
+
+images/dashboard.png
+luna.el
+projectile-bookmarks.eld
+recentf
+
