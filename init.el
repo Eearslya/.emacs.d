@@ -140,7 +140,8 @@ Calling this function interactively will always set FORCE to non-nil."
 	    (when (or (file-newer-than-file-p orgfile elfile)
 		      force)
 	      (luna/tangle-config-org orgfile elfile)
-	      (byte-compile-file elfile))
+                                        ; (byte-compile-file elfile)
+              )
 	    (load elbase)))))
     (message "Luna configuration reload completed in %ss." reload-time)))
 

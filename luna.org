@@ -1,0 +1,449 @@
+#+TITLE: Emacs Configuration
+#+AUTHOR: Eearslya Sleiarion
+#+STARTUP: content
+
+* Initialization
+
+** Customizations
+
+I prefer not to use the Customizations menu and instead make all
+of my configuration here in this file. So, I effectively disable
+the customization file by directing it to a temporary file.
+
+#+BEGIN_SRC emacs-lisp
+  (setq custom-file (make-temp-file "emacs-custom"))
+#+END_SRC
+
+** Garbage Collection
+
+We've already modified our garbage collection threshold in
+[[file:early-init.el][early-init]], but here we will additionally tell Emacs to
+garbage collect when it leaves focus, which seems like an
+ideal time to do so.
+
+#+BEGIN_SRC emacs-lisp
+  (add-hook 'emacs-startup-hook
+	    (lambda ()
+	      (if (boundp 'after-focus-change-function)
+		  (add-function :after after-focus-change-function
+				(lambda ()
+				  (unless (frame-focus-state)
+				    (garbage-collect))))
+		(add-hook 'after-focus-change-function 'garbage-collect))))
+#+END_SRC
+
+** Constants
+
+Define several constants for ourselves, mainly in order to determine
+what our system and capabilities are.
+
+#+BEGIN_SRC emacs-lisp
+  (defconst *luna/gui*
+    (or (display-graphic-p) (daemonp))
+    "Are we running a GUI Emacs?")
+
+  (defconst *luna/win32*
+    (memq system-type '(windows-nt ms-dos))
+    "Are we running on Windows?")
+
+  (defconst *luna/linux*
+    (eq system-type 'gnu/linux)
+    "Are we running on Linux?")
+
+  (defconst *luna/mac*
+    (eq system-type 'darwin)
+    "Are we running on MacOS?")
+#+END_SRC
+
+* Package Management
+
+** Load Path
+
+Add out [[file:elisp/][elisp]] directory to our load path so we can include
+custom Elisp code.
+
+#+BEGIN_SRC emacs-lisp
+  (defun add-to-load-path-recursively (folder)
+    "Add FOLDER and all subdirectories to `load-path'."
+    (unless (member folder load-path)
+      (push folder load-path))
+    (dolist (subfolder (directory-files folder))
+      (let ((name (concat folder "/" subfolder)))
+	(when (and (file-directory-p name)
+		   (not (equal subfolder "."))
+		   (not (equal subfolder ".."))
+		   (not (member subfolder load-path)))
+	  (push subfolder load-path)))))
+
+  (add-to-load-path-recursively
+   (expand-file-name "elisp" user-emacs-directory))
+#+END_SRC
+
+** Package Sources
+
+Set up our package archives here. I use the standard [[https://elpa.gnu.org/packages/][GNU]] archive,
+as well as the [[https://melpa.org/][MELPA]] and [[https://orgmode.org/elpa/][Org mode]] archives.
+
+#+BEGIN_SRC emacs-lisp
+  (eval-when-compile
+    (require 'package))
+
+  (setq package-user-dir (expand-file-name "elpa" user-emacs-directory)
+	package-archives
+	'(("gnu"   . "https://elpa.gnu.org/packages/")
+	  ("melpa" . "https://melpa.org/packages/")
+	  ("org"   . "https://orgmode.org/elpa/")))
+#+END_SRC
+
+** Set up package manager
+
+Here is where we actually initialize the package manager.
+
+#+BEGIN_SRC emacs-lisp
+  (eval-and-compile
+    (unless (bound-and-true-p package--initialized)
+      (setq package-enable-at-startup nil)
+      (package-initialize))
+    (setq use-package-verbose (not (bound-and-true-p byte-compile-current-file))))
+#+END_SRC
+
+** Use-Package
+
+The star of the show, [[https://github.com/jwiegley/use-package][use-package]] is what we'll be using for the majority of this
+configuration. It allows us to easily install packages from our archives as normal,
+as well as centralize the configuration for that package in one location. It will also
+help us defer loading package until only when they're needed, which can greatly speed
+up our start times.
+
+#+BEGIN_SRC emacs-lisp
+  (eval-when-compile
+    (unless (package-installed-p 'use-package)
+      (package-refresh-contents)
+      (package-install 'use-package))
+    (require 'use-package))
+
+  (eval-and-compile
+    (setq use-package-always-ensure t
+          use-package-expand-minimally t))
+#+END_SRC
+
+** GNU Elpa Keyring Update
+
+GNU's GPG keys are beginning to expire starting September 2019. We can use this package
+to get new, refreshed copies of the GPG keys and continue to use the GNU archive as
+normal.
+
+#+BEGIN_SRC emacs-lisp
+  (use-package gnu-elpa-keyring-update
+    :demand t)
+#+END_SRC
+
+* Preferences
+
+I never want to keep trailing whitespace at the end of a line, so just trim it all.
+
+#+BEGIN_SRC emacs-lisp
+  (add-hook 'before-save-hook 'delete-trailing-whitespace)
+#+END_SRC
+
+Shorten our "yes or no" prompts to just "y or n".
+
+#+BEGIN_SRC emacs-lisp
+  (defalias 'yes-or-no-p 'y-or-n-p)
+#+END_SRC
+
+Move all of our backup and autosave files to a central location. This keeps the =file~=
+and =#file#= files from cluttering our working directories.
+
+#+BEGIN_SRC emacs-lisp
+  (let ((backup-dir
+	 (file-name-as-directory
+	  (expand-file-name "backups" user-emacs-directory)))
+	(auto-saves-dir
+	 (file-name-as-directory
+	  (expand-file-name "autosaves" user-emacs-directory))))
+    ;; Create the directories if they don't exist yet.
+    (dolist (dir (list backup-dir auto-saves-dir))
+      (when (not (file-directory-p dir))
+	(make-directory dir t)))
+    (setq backup-directory-alist `(("." . ,backup-dir))
+	  auto-save-file-name-transforms `((".*" ,auto-saves-dir t))
+	  auto-save-list-file-prefix (concat auto-saves-dir ".saves-")))
+
+  (setq backup-by-copying t
+	create-lockfiles nil
+	delete-old-versions t
+	kept-new-versions 5
+	kept-old-versions 2
+	version-control t)
+#+END_SRC
+
+Some tweaks to how Emacs handles indentation, newlines, and spacing.
+
+#+BEGIN_SRC emacs-lisp
+  (setq-default indent-tabs-mode nil
+		indicate-empty-lines t)
+  (setq require-final-newline t
+	sentence-end-double-space nil)
+#+END_SRC
+
+And finally, a few extra tweaks that don't really warrant their own heading.
+
+#+BEGIN_SRC emacs-lisp
+  (require 'linum)
+  (global-linum-mode t)
+  (unless *luna/gui*
+    (setq linum-format "%4d \u2502 "))
+  (show-paren-mode t)
+  (setq load-prefer-newer t
+        visible-bell t)
+#+END_SRC
+
+* Interface
+
+Packages under this heading typically fall under the category of changing
+fundamentally how Emacs works. Be it how input is handled, how windows are
+managed, how the minibuffer works, and many other potential scenarios.
+
+** Dashboard
+
+[[https://github.com/emacs-dashboard/emacs-dashboard][Dashboard]] is a replacement for the Emacs startup screen that we can customize
+to our heart's content.
+
+#+BEGIN_SRC emacs-lisp
+  (use-package dashboard
+    :demand t
+    :diminish (dashboard-mode)
+    :custom
+    (dashboard-banner-logo-title
+     "Rest, my sister. As always, I will guard the night.")
+    :config
+    (dashboard-setup-startup-hook)
+    (setq initial-buffer-choice
+          (lambda () (get-buffer "*dashboard*")))
+    (if *luna/gui*
+      (setq dashboard-startup-banner
+            (expand-file-name "images/dashboard.png" user-emacs-directory))
+      (setq dashboard-startup-banner 2)))
+#+END_SRC
+
+** Diminish
+
+[[https://github.com/emacsmirror/diminish][Diminish]] is a package that allows us to hide major and minor modes from the modeline
+that we don't necessarily need to see.
+
+#+BEGIN_SRC emacs-lisp
+  (use-package diminish
+    :demand t)
+#+END_SRC
+
+** Evil Mode
+
+Possible the biggest change to our interface, the great Evil mode! Giving us
+all of those lovely Vim-like keybindings within Emacs, Evil mode permeates
+throughout this entire Emacs config.
+
+#+BEGIN_SRC emacs-lisp
+  (use-package evil
+    :demand t
+    :init
+    (unless *luna/gui*
+        (setq evil-want-C-i-jump nil))
+    :config
+    (evil-mode 1))
+  (eval-when-compile
+    (require 'evil))
+#+END_SRC
+
+** General
+
+For dealing with our many, many, many keybinds, I've decided to use [[https://github.com/noctuid/general.el][general]].
+Providing a slick and easy interface for creating keybinds, it also helpfully
+has compatibility with =use-package=, allowing us to configure keybinds
+right alongisde the package's installation.
+
+#+BEGIN_SRC emacs-lisp
+  (use-package general
+    :demand t
+    :config
+    (general-evil-setup))
+
+  (require 'general)
+#+END_SRC
+
+The second biggest change to my interface is the use of a leader key.
+During my brief stint with Spacemacs, I found that I rather liked the concept
+and now I want to include it in my own configuration. Just like Spacemacs,
+I've elected to use =SPC= as the leader.
+
+#+BEGIN_SRC emacs-lisp
+  (general-create-definer
+    leader
+    :prefix "SPC"
+    :non-normal-prefix "M-SPC"
+    :states '(emacs insert motion normal visual)
+    :keymaps 'override)
+  (leader "" nil) ; Remove any existing bindings to SPC.
+#+END_SRC
+
+Package-specific keybinds are set up alongside the packages they relate to,
+but here we'll set up some global keybinds that apply all across Emacs.
+
+#+BEGIN_SRC emacs-lisp
+  (defun luna/kill-this-buffer ()
+    (interactive)
+    (kill-buffer (current-buffer)))
+
+  (defun luna/find-config-file ()
+    (interactive)
+    (find-file
+     (expand-file-name
+      luna/org-file
+      user-emacs-directory)))
+
+  (leader
+    ;; Buffers
+    "b" '(:ignore t :wk "buffers")
+    "bb" 'switch-to-buffer
+    "bd" 'luna/kill-this-buffer
+    "bn" 'next-buffer
+    "bp" 'previous-buffer
+
+    ;; Files
+    "f" '(:ignore t :wk "files")
+    "fe" '(:ignore t :wk "emacs config")
+    "fed" 'luna/find-config-file
+    "feR" 'luna/tangle-config-load
+    "ff" 'find-file
+    "fs" 'save-buffer
+
+    ;; Windows
+    "w" '(:ignore t :wk "windows")
+    "w-" 'split-window-below
+    "w/" 'split-window-right
+    "wd" 'delete-window
+    "wm" 'delete-other-windows)
+#+END_SRC
+
+** Ivy / Counsel
+
+Counsel is a collection of packages that replace and improve Emacs' default
+autocompletion minibuffer.
+
+#+BEGIN_SRC emacs-lisp
+  (use-package counsel
+    :diminish ivy-mode counsel-mode
+    :init
+    (setq ivy-use-virtual-buffers t)
+    :config
+    (ivy-mode 1)
+    (counsel-mode 1)
+    :general
+    (leader "SPC" 'counsel-M-x))
+#+END_SRC
+
+** Which Key
+
+With so many keybinds and so many nested menus inside General, it's easy to
+lose track of what keys do what. [[https://github.com/justbur/emacs-which-key][Which-Key]] helps with this when you start
+a key chord, showing a list of key combinations you can continue or finish
+the chord with.
+
+#+BEGIN_SRC emacs-lisp
+  (use-package which-key
+    :demand t
+    :diminish
+    :config
+    (which-key-mode))
+#+END_SRC
+
+** Window Numbering
+
+Assign a number from 1 through 9 to each window to allow for quick and easy
+switching between them,
+
+#+BEGIN_SRC emacs-lisp
+  (use-package window-numbering
+    :demand t
+    :config
+    (window-numbering-mode)
+    (push '(("\\(.*\\) 0" . "select-window-0") . ("\\1 0-9" . "select window"))
+          which-key-replacement-alist)
+    (push '((nil . "select-window-[1-9]") . t) which-key-replacement-alist)
+    :general
+    (leader
+      "1" 'select-window-1
+      "2" 'select-window-2
+      "3" 'select-window-3
+      "4" 'select-window-4
+      "5" 'select-window-5
+      "6" 'select-window-6
+      "7" 'select-window-7
+      "8" 'select-window-8
+      "9" 'select-window-9))
+#+END_SRC
+
+* Appearance
+
+Themes, fonts, colors of all sorts! All of them get a place here.
+
+** Doom Themes
+
+#+BEGIN_SRC emacs-lisp
+  (use-package doom-themes
+    :if *luna/gui*
+    :config
+    (load-theme 'doom-one t)
+    (doom-themes-org-config))
+#+END_SRC
+
+** Source Code Pro
+
+Set our default font to [[https://github.com/adobe-fonts/source-code-pro][Source Code Pro]].
+
+#+BEGIN_SRC emacs-lisp
+  (when *luna/gui*
+    (set-face-attribute 'default nil
+                        :family "Source Code Pro"
+                        :height 120
+                        :weight 'normal
+                        :width 'normal))
+#+END_SRC
+
+* Org Mode
+
+Org mode is a massive addition to Emacs that allows you to simply perform miracles.
+Organization, scheduling, note taking, and even writing Emacs configuration files!
+
+#+BEGIN_SRC emacs-lisp
+  (use-package org
+    :config
+    (org-babel-do-load-languages
+     'org-babel-load-languages
+     '((emacs-lisp . t)
+       (org . t)
+       (ruby . t)
+       (shell . t)))
+    (setq org-src-fontify-natively t
+          org-src-tab-acts-natively t)
+    (push '("E" "#+BEGIN_SRC emacs-lisp\n?\n#+END_SRC")
+          org-structure-template-alist))
+#+END_SRC
+
+Org mode, by default, doesn't play too nicely with Evil mode. Luckily, there's a
+package for that!
+
+#+BEGIN_SRC emacs-lisp
+  (use-package evil-org
+    :after org
+    :diminish
+    :config
+    (add-hook 'org-mode-hook 'evil-org-mode)
+    (add-hook 'evil-org-mode-hook
+              (lambda ()
+                (evil-org-set-key-theme)))
+    (require 'evil-org-agenda)
+    (evil-org-agenda-set-keys)
+    (unless *luna/gui*
+      (setq evil-want-C-i-jump nil)))
+#+END_SRC
