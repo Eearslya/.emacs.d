@@ -247,12 +247,22 @@ throughout this entire Emacs config.
   (use-package evil
     :demand t
     :init
+    (setq evil-want-keybinding nil)
     (unless *luna/gui*
         (setq evil-want-C-i-jump nil))
     :config
     (evil-mode 1))
   (eval-when-compile
     (require 'evil))
+#+END_SRC
+
+Now, to make Evil mode play nicely with others, we'll use [[https://github.com/emacs-evil/evil-collection][evil-collection]].
+This brings Vim keybinds into some other packages and major modes.
+
+#+BEGIN_SRC emacs-lisp
+  (use-package evil-collection
+    :init
+    (evil-collection-init))
 #+END_SRC
 
 ** General
@@ -446,4 +456,21 @@ package for that!
     (evil-org-agenda-set-keys)
     (unless *luna/gui*
       (setq evil-want-C-i-jump nil)))
+#+END_SRC
+
+* Programming
+
+In this section are all of the packages related to programming in general, not
+related to a specific language.
+
+** Magit
+
+Our favorite git frontend, the one and only [[https://github.com/magit/magit][magit]].
+
+#+BEGIN_SRC emacs-lisp
+  (use-package magit
+    :general
+    (leader
+      "g" '(:ignore t :wk "magit")
+      "gs" 'magit-status))
 #+END_SRC
